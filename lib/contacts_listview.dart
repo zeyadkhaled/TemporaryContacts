@@ -33,9 +33,18 @@ class _ContactsListViewState extends State<ContactsListView> {
     return _colorList[rand.nextInt(_colorList.length)];
   }
 
-  /**
-   * Application
-   */
+
+   // Application Flow:
+   // (1) _getContacts() is called to retrieve data from shared preferences
+   //     Format is {'contacts' : {'givenName+familyName',''givenName+familyName'}}
+   //               {'givenName+familyName' : { 'givenName' , 'familyName', 'jobName'}}
+   //
+   // (2) _requestPermission() asks for Contact Read/Write permissions on both platforms
+   // (3) _addContacts() adds contact if not duplicated in _contactsList , SharedPrefs, ContactsService
+   // (4) _deleteContacts() removes the contact from _contactsList, SharedPrefs, ContactsService "Using a query"
+
+
+  //Retrieves contacts from SharedPreferences and adds them to _contactsList
   _getContacts() async {
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
@@ -57,6 +66,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     }
   }
 
+  //Adds contacts to SharedPrefs, ContactsServices, and _contactsList
   _addContacts(Contact c) async {
     String name = c.givenName + c.familyName;
     List<String> details = new List<String>();
@@ -86,22 +96,30 @@ class _ContactsListViewState extends State<ContactsListView> {
     }
   }
 
+  //Delete contact from SharedPrefs, ContactsServices, and _contactsList
   _deleteContact(Contact c) async {
     String name = c.givenName + c.familyName;
-    final SharedPreferences prefs = await _prefs;
 
+    //Shared Preferences removal
+    final SharedPreferences prefs = await _prefs;
     prefs.remove(name);
     List<String> tmp = prefs.getStringList('contacts');
     tmp.remove(name);
     prefs.setStringList('contacts', tmp);
-    _contactList.remove(c);
 
-    Iterable<Contact> test = await ContactsService.getContacts(
+
+    //ContactsService removal
+    Iterable<Contact> test = await ContactsService.getContacts( //Query using givenName + SPACE + familyName
         query: (c.givenName + " " + c.familyName));
     if (test.length > 0) {
       Contact delete = test.toList()[0];
       await ContactsService.deleteContact(delete);
     }
+
+
+    //ContactsList removal
+    _contactList.remove(c);
+
     setState(() {
       _buildListView();
     });
