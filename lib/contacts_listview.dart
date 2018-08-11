@@ -5,6 +5,8 @@ import 'dart:async';
 import 'package:simple_permissions/simple_permissions.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'addcontact_dialog.dart';
+
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
@@ -133,6 +135,18 @@ class _ContactsListViewState extends State<ContactsListView> {
         await SimplePermissions.requestPermission(Permission.ReadContacts);
     print("permission request result is " + res.toString());
     print("permission request result is " + res2.toString());
+  }
+
+  Future  _showAddContactDialog()  async {
+    Contact save = await Navigator.of(context).push(new MaterialPageRoute<Contact>(
+        builder: (BuildContext context) {
+          return new AddContactDialog();
+        },
+        fullscreenDialog: true
+    ));
+    if (save != null) {
+      _addContacts(save);
+    }
   }
 
   //Shows delete dialog when Contact tile is long pressed
@@ -268,12 +282,14 @@ class _ContactsListViewState extends State<ContactsListView> {
       backgroundColor: Colors.blue,
       child: Icon(Icons.add),
       onPressed: () {
-        _addContacts(new Contact(
-            givenName: "Zeyad", familyName: "Test", jobTitle: "Hacker"));
-        setState(() {
-          _buildListView();
-        });
+        _showAddContactDialog();
 
+//        _addContacts(new Contact(
+//            givenName: "Zeyad", familyName: "Test", jobTitle: "Hacker"));
+//        setState(() {
+//          _buildListView();
+//        });
+//
         //Scroll to top of list after item has been added
         SchedulerBinding.instance.addPostFrameCallback(
           (_) {
