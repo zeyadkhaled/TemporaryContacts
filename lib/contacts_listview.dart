@@ -33,7 +33,9 @@ class _ContactsListViewState extends State<ContactsListView> {
     return _colorList[rand.nextInt(_colorList.length)];
   }
 
-
+  /**
+   * Application
+   */
   _getContacts() async {
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
@@ -45,8 +47,8 @@ class _ContactsListViewState extends State<ContactsListView> {
             givenName: details[0],
             familyName: details[1],
             jobTitle: details[2],
-            //phones: details[3] //Extend Contact Class to Change this
           );
+          _contactList.add(c);
           setState(() {
             _buildListView();
           });
@@ -62,25 +64,27 @@ class _ContactsListViewState extends State<ContactsListView> {
     details.add(c.familyName);
     details.add(c.jobTitle);
 
-    //details.add(c.phones.join("")); // Extend Contact class
-
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
+
 
     if (contacts == null) {
       List<String> contacts = new List<String>();
       contacts.add(name);
       prefs.setStringList('contacts', contacts);
+      prefs.setStringList(name, details);
+      _contactList.add(c);
+      ContactsService.addContact(c);
+
     } else {
-      contacts.add(c.givenName);
-      prefs.setStringList('contacts', contacts);
+      if ( !contacts.contains(name))  {
+        contacts.add(name);
+        prefs.setStringList('contacts', contacts);
+        prefs.setStringList(name, details);
+        _contactList.add(c);
+        ContactsService.addContact(c);
+      }
     }
-
-    //Add new contact in appropriate places
-    prefs.setStringList(name, details);
-    _contactList.add(c);
-    await ContactsService.addContact(c);
-
   }
 
   _deleteContact(Contact c) async {
@@ -91,10 +95,12 @@ class _ContactsListViewState extends State<ContactsListView> {
     prefs.getStringList('contacts').remove(name);
     _contactList.remove(c);
 
-    Iterable<Contact> test = await ContactsService.getContacts(query : (c.givenName + " " + c.familyName));
-    Contact deleteable = test.toList()[0];
-    await ContactsService.deleteContact(deleteable);
-
+    Iterable<Contact> test = await ContactsService.getContacts(
+        query: (name));
+    if (test.length > 0) {
+      Contact deleteable = test.toList()[0];
+      await ContactsService.deleteContact(deleteable);
+    }
     setState(() {
       _buildListView();
     });
