@@ -4,14 +4,19 @@ import 'dart:math';
 import 'dart:async';
 import 'package:simple_permissions/simple_permissions.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
 }
 
 class _ContactsListViewState extends State<ContactsListView> {
-  ScrollController _scrollController = new ScrollController();
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   final _contactList = <Contact>[];
+
+  ScrollController _scrollController =
+      new ScrollController(); //For ListView Scrolling
+
   final _colorList = <Color>[
     Colors.pink[600],
     Colors.red[600],
@@ -28,6 +33,54 @@ class _ContactsListViewState extends State<ContactsListView> {
     return _colorList[rand.nextInt(_colorList.length)];
   }
 
+  _getContacts() async {
+    final SharedPreferences prefs = await _prefs;
+    final List<String> contacts = (prefs.getStringList('contacts') ?? null);
+    if (contacts != null) {
+      for (String name in contacts) {
+        final List<String> details = (prefs.getStringList(name) ?? null);
+        if (details != null) {
+          Contact c = new Contact(
+            givenName: details[0],
+            familyName: details[1],
+            jobTitle: details[2],
+            //phones: details[3] //Extend Contact Class to Change this
+          );
+          _contactList.add(c);
+          setState(() {
+            _buildListView();
+          });
+        }
+      }
+    }
+  }
+
+  _addContacts(Contact c) async {
+    String name = c.givenName + c.familyName;
+    List<String> details = new List<String>();
+    details.add(c.givenName);
+    details.add(c.familyName);
+    details.add(c.jobTitle);
+    //details.add(c.phones.join("")); // Extend Contact class
+
+    final SharedPreferences prefs = await _prefs;
+    final List<String> contacts = (prefs.getStringList('contacts') ?? null);
+
+    if (contacts == null) {
+      List<String> contacts = new List<String>();
+      contacts.add(name);
+      prefs.setStringList('contacts', contacts);
+    } else {
+      contacts.add(c.givenName);
+      prefs.setStringList('contacts', contacts);
+    }
+
+    //Add new contact in appropriate places
+    prefs.setStringList(name, details);
+    _contactList.add(c);
+    ContactsService.addContact(c);
+  }
+
   // Method to ask for permissions if not requested before
   _requestContactsPermissions() async {
     bool res =
@@ -38,7 +91,15 @@ class _ContactsListViewState extends State<ContactsListView> {
     print("permission request result is " + res2.toString());
   }
 
-  void buildList() {
+  //TEST METHODS:
+  _addContact() {
+    Contact z =
+        new Contact(givenName: "Zeyad", familyName: "Test", jobTitle: "Hacker");
+    ContactsService.addContact(z);
+    _contactList.add(z);
+  }
+
+  _buildList() {
     Contact c1 = new Contact(givenName: 'Zeyad', jobTitle: 'Macbook seller');
     Contact c2 = new Contact(givenName: 'Khaled', jobTitle: 'Aramex Delievery');
     Contact c3 = new Contact(givenName: 'Mohamed', jobTitle: 'Pizza Guy');
@@ -47,12 +108,13 @@ class _ContactsListViewState extends State<ContactsListView> {
     _contactList.add(c3);
   }
 
-  void initState() {
+  @override
+  void initState(){
     super.initState();
-    buildList();
+    _getContacts();
     _requestContactsPermissions();
   }
-
+  
   Widget _buildListView() {
     return ListView.builder(
       controller: _scrollController,
@@ -69,7 +131,7 @@ class _ContactsListViewState extends State<ContactsListView> {
         var contact = _contactList[i];
         return _contactTile(contact);
       },
-      itemCount: _contactList.length * 2,
+      itemCount: (_contactList.length * 2) - 1,
     );
   }
 
@@ -133,31 +195,26 @@ class _ContactsListViewState extends State<ContactsListView> {
                 ))));
   }
 
-  addContact() {
-    Contact z =
-        new Contact(givenName: "Zeyad", familyName: "Test", jobTitle: "Hacker");
-    ContactsService.addContact(z);
-    _contactList.add(z);
-  }
-
   Widget actionButton() {
     return FloatingActionButton(
       backgroundColor: Colors.blue,
       child: Icon(Icons.add),
       onPressed: () {
-        addContact();
+        _addContacts(new Contact(
+            givenName: "Zeyad", familyName: "Test", jobTitle: "Hacker"));
         print("Success");
         setState(() {
           _buildListView();
         });
         //Scroll to top of list after item has been added
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        },
+        SchedulerBinding.instance.addPostFrameCallback(
+          (_) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          },
         );
       },
       elevation: 2.0,
