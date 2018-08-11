@@ -75,7 +75,6 @@ class _ContactsListViewState extends State<ContactsListView> {
       prefs.setStringList(name, details);
       _contactList.add(c);
       ContactsService.addContact(c);
-
     } else {
       if ( !contacts.contains(name))  {
         contacts.add(name);
@@ -92,14 +91,16 @@ class _ContactsListViewState extends State<ContactsListView> {
     final SharedPreferences prefs = await _prefs;
 
     prefs.remove(name);
-    prefs.getStringList('contacts').remove(name);
+    List<String> tmp = prefs.getStringList('contacts');
+    tmp.remove(name);
+    prefs.setStringList('contacts', tmp);
     _contactList.remove(c);
 
     Iterable<Contact> test = await ContactsService.getContacts(
-        query: (name));
+        query: (c.givenName + " " + c.familyName));
     if (test.length > 0) {
-      Contact deleteable = test.toList()[0];
-      await ContactsService.deleteContact(deleteable);
+      Contact delete = test.toList()[0];
+      await ContactsService.deleteContact(delete);
     }
     setState(() {
       _buildListView();
