@@ -33,6 +33,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     return _colorList[rand.nextInt(_colorList.length)];
   }
 
+
   _getContacts() async {
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
@@ -46,7 +47,6 @@ class _ContactsListViewState extends State<ContactsListView> {
             jobTitle: details[2],
             //phones: details[3] //Extend Contact Class to Change this
           );
-          _contactList.add(c);
           setState(() {
             _buildListView();
           });
@@ -61,6 +61,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     details.add(c.givenName);
     details.add(c.familyName);
     details.add(c.jobTitle);
+
     //details.add(c.phones.join("")); // Extend Contact class
 
     final SharedPreferences prefs = await _prefs;
@@ -78,7 +79,25 @@ class _ContactsListViewState extends State<ContactsListView> {
     //Add new contact in appropriate places
     prefs.setStringList(name, details);
     _contactList.add(c);
-    ContactsService.addContact(c);
+    await ContactsService.addContact(c);
+
+  }
+
+  _deleteContact(Contact c) async {
+    String name = c.givenName + c.familyName;
+    final SharedPreferences prefs = await _prefs;
+
+    prefs.remove(name);
+    prefs.getStringList('contacts').remove(name);
+    _contactList.remove(c);
+
+    Iterable<Contact> test = await ContactsService.getContacts(query : (c.givenName + " " + c.familyName));
+    Contact deleteable = test.toList()[0];
+    await ContactsService.deleteContact(deleteable);
+
+    setState(() {
+      _buildListView();
+    });
   }
 
   // Method to ask for permissions if not requested before
@@ -91,30 +110,52 @@ class _ContactsListViewState extends State<ContactsListView> {
     print("permission request result is " + res2.toString());
   }
 
-  //TEST METHODS:
-  _addContact() {
-    Contact z =
-        new Contact(givenName: "Zeyad", familyName: "Test", jobTitle: "Hacker");
-    ContactsService.addContact(z);
-    _contactList.add(z);
-  }
-
-  _buildList() {
-    Contact c1 = new Contact(givenName: 'Zeyad', jobTitle: 'Macbook seller');
-    Contact c2 = new Contact(givenName: 'Khaled', jobTitle: 'Aramex Delievery');
-    Contact c3 = new Contact(givenName: 'Mohamed', jobTitle: 'Pizza Guy');
-    _contactList.add(c1);
-    _contactList.add(c2);
-    _contactList.add(c3);
+  //Shows delete dialog when Contact tile is long pressed
+  _showDeleteDialog(Contact c) {
+    showDialog(
+      barrierDismissible: true,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text("Delete Contact"),
+          content: new Text("Are you sure you want to delete  " +
+              "\n" +
+              c.givenName +
+              " " +
+              c.familyName +
+              "?"),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text(
+                "Delete",
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+              onPressed: () {
+                _deleteContact(c);
+                Navigator.of(context).pop();
+              },
+            ),
+            new FlatButton(
+              child: new Text("Close"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _getContacts();
     _requestContactsPermissions();
   }
-  
+
   Widget _buildListView() {
     return ListView.builder(
       controller: _scrollController,
@@ -136,12 +177,14 @@ class _ContactsListViewState extends State<ContactsListView> {
   }
 
   Widget _contactTile(Contact contact) {
-    Divider();
     return Material(
         color: Colors.transparent,
         child: Container(
             height: 100.0,
             child: InkWell(
+                onLongPress: () {
+                  _showDeleteDialog(contact);
+                },
                 onTap: () {},
                 highlightColor: Colors.red[400],
                 splashColor: Colors.red[100],
@@ -202,10 +245,10 @@ class _ContactsListViewState extends State<ContactsListView> {
       onPressed: () {
         _addContacts(new Contact(
             givenName: "Zeyad", familyName: "Test", jobTitle: "Hacker"));
-        print("Success");
         setState(() {
           _buildListView();
         });
+
         //Scroll to top of list after item has been added
         SchedulerBinding.instance.addPostFrameCallback(
           (_) {
