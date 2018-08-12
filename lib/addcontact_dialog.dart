@@ -80,6 +80,7 @@ class AddContactDialogState extends State<AddContactDialog> {
                 padding: const EdgeInsets.only(top: 8.0),
                 child: new ListTile(
                   title: new TextField(
+                    maxLength: 15,
                     decoration: new InputDecoration(
                       labelStyle: Theme.of(context).textTheme.display1,
                       labelText: 'Phone Number',

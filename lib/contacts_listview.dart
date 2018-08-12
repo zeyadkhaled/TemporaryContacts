@@ -10,11 +10,9 @@ import 'dart:core';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-//TODO: Change Tile UI
 //TODO: Change overall UI
 //TODO: About page
 //TODO: Help page
-//TODO: Expand Tiles
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
@@ -83,15 +81,18 @@ class _ContactsListViewState extends State<ContactsListView> {
       for (String name in contacts) {
         final List<String> details = (prefs.getStringList(name) ?? null);
         if (details != null) {
+          Iterable<Item> phones = [
+            new Item(label: "Mobile", value: details[3])
+          ];
           Contact c = new Contact(
-            givenName: details[0],
-            familyName: details[1],
-            jobTitle: details[2],
-          );
+              givenName: details[0],
+              familyName: details[1],
+              jobTitle: details[2],
+              phones: phones);
           //Check if its time to remove this contact, if so added to a
           // deleteList not to interfere with the retrieval of shared
           // preferences thread
-          if (_shouldBeRemoved(details[3])) {
+          if (_shouldBeRemoved(details[4])) {
             _deleteList.add(c);
           } else {
             _contactList.add(c);
@@ -117,6 +118,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     details.add(c.givenName);
     details.add(c.familyName);
     details.add(c.jobTitle);
+    details.add(c.phones.toList().removeLast().value);
 
     // Timestamp of creation in milliseconds
     String time = new DateTime.now().millisecondsSinceEpoch.toString();
@@ -360,16 +362,59 @@ class _ContactsListViewState extends State<ContactsListView> {
       controller: _scrollController,
       padding: const EdgeInsets.all(16.0),
       itemBuilder: (BuildContext context, int index) {
-        if (index.isOdd) {
-          return Divider(
-            height: 2.0,
-          );
-        }
-        final i = index ~/ 2;
-        var contact = _contactList[_contactList.length - 1 - i];
-        return _contactTile(contact);
+//        if (index.isOdd) {
+//          return Divider(
+//            height: 2.0,
+//          );
+//        }
+//        final i = index ~/ 2;
+        var contact = _contactList[_contactList.length - 1 - index];
+        return _customTile(contact);
       },
-      itemCount: (_contactList.length * 2),
+      itemCount: (_contactList.length),
+    );
+  }
+
+  Widget _customTile(Contact contact) {
+    return new Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: new ExpansionTile(
+        leading: new CircleAvatar(
+          child: Text(contact.givenName.substring(0, 1).toUpperCase(),
+              style: TextStyle(
+                fontSize: 20.0,
+              )),
+          radius: 25.0,
+          backgroundColor: _randColor(),
+          foregroundColor: Colors.white,
+        ),
+        title: new Text(
+          contact.givenName + " " + contact.familyName,
+          style: new TextStyle(fontSize: 18.0),
+        ),
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: new ListTile(
+              title: new Text(
+                contact.jobTitle,
+                maxLines: 2,
+              ),
+              subtitle: new Text(contact.phones == null
+                  ? "No Number"
+                  : contact.phones.toList().removeLast().value),
+              trailing: new Icon(
+                Icons.delete_sweep,
+                size: 36.0,
+                color: Colors.red,
+              ),
+              onTap: () {
+                _showDeleteDialog(contact);
+              },
+            ),
+          )
+        ],
+      ),
     );
   }
 
