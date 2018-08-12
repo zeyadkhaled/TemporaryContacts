@@ -14,7 +14,6 @@ import 'package:numberpicker/numberpicker.dart';
 //TODO: Change overall UI
 //TODO: About page
 //TODO: Help page
-//TODO: Interval dialog
 //TODO: Expand Tiles
 
 class ContactsListView extends StatefulWidget {
@@ -64,7 +63,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     await SimplePermissions.requestPermission(Permission.ReadContacts);
   }
 
-  //#########################MISC#########################
+  //#########################HELPING METHODS#########################
 
   //Generate Random Color
   Color _randColor() {
@@ -79,7 +78,6 @@ class _ContactsListViewState extends State<ContactsListView> {
   _getContacts() async {
     _contactList = <Contact>[];
     final SharedPreferences prefs = await _prefs;
-    print("Did change?" + prefs.getInt('interval').toString());
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
     if (contacts != null) {
       for (String name in contacts) {
@@ -186,7 +184,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     });
   }
 
-  //########################Interval Work#############################
+  //########################INTERVAL WORK############################
 
   //The Contact AutoRemoval algorithm
   bool _shouldBeRemoved(String time) {
@@ -203,17 +201,19 @@ class _ContactsListViewState extends State<ContactsListView> {
     return false;
   }
 
+  //Initialize interval based on shared preferences or default value of 7 days
   _initializeInterval() async {
     final SharedPreferences prefs = await _prefs;
     int interval = prefs.getInt('interval');
-    if ( interval != null) {
+    if (interval != null) {
       _intervalValue = interval;
     } else {
       _intervalValue = 7;
-       prefs.setInt('interval', 7);
+      prefs.setInt('interval', 7);
     }
   }
 
+  //Change Interval value in Shared Preferences
   _changeInterval(int value) async {
     final SharedPreferences prefs = await _prefs;
     prefs.setInt('interval', value);
@@ -304,18 +304,16 @@ class _ContactsListViewState extends State<ContactsListView> {
           minValue: 1,
           maxValue: 100,
           step: 1,
-          initialIntegerValue: 1,
-          title:
-              new Text("Set Contact Auto-Remove Interval after how many days?"),
+          initialIntegerValue: _intervalValue,
+          title: new Text("Pick days after which contacts are AutoRemoved"),
         );
       },
     ).then((value) => _changeInterval(value));
-    print("CHANGED" + _intervalValue.toString());
   }
 
   //Side menu
   void _sideMenuAction(String choice) {
-    if (choice == "set") {
+    if (choice == "interval") {
       _showIntervalDialog();
     }
   }
@@ -469,7 +467,7 @@ class _ContactsListViewState extends State<ContactsListView> {
                     const PopupMenuItem(value: "help", child: Text("Help")),
                     const PopupMenuItem(value: "about", child: Text("About")),
                     const PopupMenuItem(
-                        value: "set", child: Text("Set Interval")),
+                        value: "interval", child: Text("AutoRemove Interval")),
                   ])
         ],
       ),
