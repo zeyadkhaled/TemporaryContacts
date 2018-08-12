@@ -10,9 +10,8 @@ import 'dart:core';
 import 'package:fluttertoast/fluttertoast.dart';
 
 //TO DO
-// Change Tile UI
+//Change Tile UI
 //Change overall UI
-//Add view contact
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
@@ -195,16 +194,26 @@ class _ContactsListViewState extends State<ContactsListView> {
             fullscreenDialog: true));
     if (returnedContact != null) {
       _addContacts(returnedContact);
+
+      //Scroll to top of list after item has been added
+      SchedulerBinding.instance.addPostFrameCallback(
+            (_) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        },
+      );
+
     }
   }
 
   Future<Null> _handleRefresh() async {
     await new Future.delayed(new Duration(seconds: 1));
-
     setState(() {
       _getContacts();
     });
-
     return null;
   }
 
@@ -292,8 +301,8 @@ class _ContactsListViewState extends State<ContactsListView> {
     }
 
     return ListView.builder(
-      physics:
-          AlwaysScrollableScrollPhysics(), //Fix this not working due to reversed ListView
+     // physics:
+      //    AlwaysScrollableScrollPhysics(), //Fix this not working due to reversed ListView
       controller: _scrollController,
       reverse: true,
       shrinkWrap: true,
@@ -378,20 +387,11 @@ class _ContactsListViewState extends State<ContactsListView> {
   //Action button to show up add contact form
   Widget actionButton() {
     return FloatingActionButton(
+      tooltip: "Add contacts",
       backgroundColor: Colors.blue,
       child: Icon(Icons.add),
       onPressed: () {
         _showAddContactDialog();
-        //Scroll to top of list after item has been added
-        SchedulerBinding.instance.addPostFrameCallback(
-          (_) {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-          },
-        );
       },
       elevation: 2.0,
     );

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 //TO DO
 // Change UI
-// Add Input Validation
 
 class AddContactDialog extends StatefulWidget {
   @override
@@ -19,8 +19,6 @@ class AddContactDialogState extends State<AddContactDialog> {
     contact.phones = phones;
   }
 
-
-
   Widget _createDialogBody() {
     return Padding(
         padding: const EdgeInsets.only(top: 16.0),
@@ -32,7 +30,6 @@ class AddContactDialogState extends State<AddContactDialog> {
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
                 child: new ListTile(
-                  //leading: new Icon(Icons.info, color: Colors.grey[500]),
                   title: new TextField(
                     maxLength: 10,
                     decoration: new InputDecoration(
@@ -50,7 +47,6 @@ class AddContactDialogState extends State<AddContactDialog> {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: new ListTile(
-                  //leading: new Icon(Icons.info, color: Colors.grey[500]),
                   title: new TextField(
                     maxLength: 10,
                     decoration: new InputDecoration(
@@ -69,12 +65,10 @@ class AddContactDialogState extends State<AddContactDialog> {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: new ListTile(
-                  //leading: new Icon(Icons.info, color: Colors.grey[500]),
                   title: new TextField(
                     maxLength: 50,
                     decoration: new InputDecoration(
                       labelStyle: Theme.of(context).textTheme.display1,
-                      //errorText: _showValidationError ? 'Invalid number entered' : null,
                       labelText: 'Description',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(0.0),
@@ -109,15 +103,27 @@ class AddContactDialogState extends State<AddContactDialog> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+
       appBar: new AppBar(
-        title: const Text('New entry'),
+        title: const Text('Add Contact'),
         actions: [
           new FlatButton(
               onPressed: () {
-                Navigator.of(context).pop(
-                    contact.givenName == "" || contact.familyName == ""
-                        ? null
-                        : contact);
+                if (contact.givenName == null ||
+                    contact.familyName == null ||
+                    contact.jobTitle == null ||
+                    contact.phones == null) {
+                  Fluttertoast.showToast(
+                      msg: "Please fill all forms!",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.BOTTOM,
+                      timeInSecForIos: 1,
+                      bgcolor: "#e74c3c",
+                      textcolor: '#ffffff'
+                  );
+                } else {
+                  Navigator.of(context).pop(contact);
+                }
               },
               child: new Text('SAVE',
                   style: Theme
