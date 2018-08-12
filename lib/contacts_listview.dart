@@ -19,9 +19,11 @@ class ContactsListView extends StatefulWidget {
 }
 
 class _ContactsListViewState extends State<ContactsListView> {
+
+
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   final _contactList = <Contact>[];
-
+  final _deleteList = <Contact>[];
   ScrollController _scrollController =
       new ScrollController(); //For ListView Scrolling
 
@@ -41,18 +43,19 @@ class _ContactsListViewState extends State<ContactsListView> {
     return _colorList[rand.nextInt(_colorList.length)];
   }
 
+  // Application Flow:
+  // (1) _getContacts() is called to retrieve data from shared preferences
+  //     Format is {'contacts' : {'givenName+familyName',''givenName+familyName'}}
+  //               {'givenName+familyName' : { 'givenName' , 'familyName', 'jobName'}}
+  //
+  // (2) _requestPermission() asks for Contact Read/Write permissions on both platforms
+  // (3) _addContacts() adds contact if not duplicated in _contactsList , SharedPrefs, ContactsService
+  // (4) _deleteContacts() removes the contact from _contactsList, SharedPrefs, ContactsService "Using a query"
 
-   // Application Flow:
-   // (1) _getContacts() is called to retrieve data from shared preferences
-   //     Format is {'contacts' : {'givenName+familyName',''givenName+familyName'}}
-   //               {'givenName+familyName' : { 'givenName' , 'familyName', 'jobName'}}
-   //
-   // (2) _requestPermission() asks for Contact Read/Write permissions on both platforms
-   // (3) _addContacts() adds contact if not duplicated in _contactsList , SharedPrefs, ContactsService
-   // (4) _deleteContacts() removes the contact from _contactsList, SharedPrefs, ContactsService "Using a query"
 
 
   //Retrieves contacts from SharedPreferences and adds them to _contactsList
+  //Also checks for Contacts to be removed if they passed the interval
   _getContacts() async {
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
@@ -65,21 +68,27 @@ class _ContactsListViewState extends State<ContactsListView> {
             familyName: details[1],
             jobTitle: details[2],
           );
-          _contactList.add(c);
-          setState(() {
-            _buildListView();
-          });
+          //Check if its time to remove this contact, if so added to a
+          // deleteList not to interfere with the retrieval of shared
+          // preferences thread
+          if (_shouldBeRemoved(details[3])) {
+            _deleteList.add(c);
+          } else {
+            print("here");
+            _contactList.add(c);
+          }
         }
       }
+      //Check if there was found any contacts to be deleted and deleted them
+      for (Contact c in _deleteList) {
+        _deleteContact(c);
+      }
     }
-  }
 
-//  bool _shouldBeRemoved(String time) {
-//
-//    DateTime dateOfCreation
-//
-//    return false;
-//  }
+    setState(() {
+      _buildListView();
+    });
+  }
 
   //Adds contacts to SharedPrefs, ContactsServices, and _contactsList
   _addContacts(Contact c) async {
@@ -94,10 +103,9 @@ class _ContactsListViewState extends State<ContactsListView> {
     String time = new DateTime.now().millisecondsSinceEpoch.toString();
     details.add(time);
 
-
+    //Retrieve SharePrefences
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
-
 
     if (contacts == null) {
       List<String> contacts = new List<String>();
@@ -107,7 +115,7 @@ class _ContactsListViewState extends State<ContactsListView> {
       _contactList.add(c);
       ContactsService.addContact(c);
     } else {
-      if ( !contacts.contains(name))  {
+      if (!contacts.contains(name)) {
         contacts.add(name);
         prefs.setStringList('contacts', contacts);
         prefs.setStringList(name, details);
@@ -128,23 +136,39 @@ class _ContactsListViewState extends State<ContactsListView> {
     tmp.remove(name);
     prefs.setStringList('contacts', tmp);
 
-
     //ContactsService removal
-    Iterable<Contact> test = await ContactsService.getContacts( //Query using givenName + SPACE + familyName
+    Iterable<Contact> test = await ContactsService.getContacts(
+        //Query using givenName + SPACE + familyName
         query: (c.givenName + " " + c.familyName));
     if (test.length > 0) {
       Contact delete = test.toList()[0];
       await ContactsService.deleteContact(delete);
     }
 
-
     //ContactsList removal
-    _contactList.remove(c);
+    if (_contactList.contains(c))
+      _contactList.remove(c);
 
     setState(() {
       _buildListView();
     });
   }
+
+  //The Contact AutoRemoval algorithm
+  bool _shouldBeRemoved(String time) {
+    //Parse time of creation from String
+    DateTime dateOfCreation =
+    new DateTime.fromMillisecondsSinceEpoch(int.parse(time));
+    //Retrieve current time and find difference between the two
+    DateTime currentTime = new DateTime.now();
+    Duration difference = currentTime.difference(dateOfCreation);
+
+    //If difference is more than a specific period, return true
+    if (difference.inMinutes >= 1) return true;
+
+    return false;
+  }
+
 
   // Method to ask for permissions if not requested before
   _requestContactsPermissions() async {
@@ -156,13 +180,14 @@ class _ContactsListViewState extends State<ContactsListView> {
     print("permission request result is " + res2.toString());
   }
 
-  Future  _showAddContactDialog()  async {
-    Contact save = await Navigator.of(context).push(new MaterialPageRoute<Contact>(
-        builder: (BuildContext context) {
-          return new AddContactDialog();
-        },
-        fullscreenDialog: true
-    ));
+  //View the Add contact Full screen dialog
+  Future _showAddContactDialog() async {
+    Contact save =
+        await Navigator.of(context).push(new MaterialPageRoute<Contact>(
+            builder: (BuildContext context) {
+              return new AddContactDialog();
+            },
+            fullscreenDialog: true));
     if (save != null) {
       _addContacts(save);
     }
@@ -207,6 +232,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
+  //Initialize the state of the app
   @override
   void initState() {
     super.initState();
@@ -216,8 +242,8 @@ class _ContactsListViewState extends State<ContactsListView> {
 
   Widget _buildListView() {
 
-
-    if ( _contactList.length == 0) {
+    //Check if the contact list has time to be viewed
+    if (_contactList.length == 0) {
       return Center(
         child: SingleChildScrollView(
           child: Container(
@@ -240,8 +266,8 @@ class _ContactsListViewState extends State<ContactsListView> {
                   "You dont have any contacts yet, add some!",
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headline.copyWith(
-                    color: Colors.white,
-                  ),
+                        color: Colors.white,
+                      ),
                 ),
               ],
             ),
@@ -249,7 +275,6 @@ class _ContactsListViewState extends State<ContactsListView> {
         ),
       );
     }
-
 
     return ListView.builder(
       controller: _scrollController,
@@ -270,6 +295,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
+  //Single contact tile that will be used in the ListView
   Widget _contactTile(Contact contact) {
     return Material(
         color: Colors.transparent,
@@ -332,6 +358,7 @@ class _ContactsListViewState extends State<ContactsListView> {
                 ))));
   }
 
+  //Action button to show up add contact form
   Widget actionButton() {
     return FloatingActionButton(
       backgroundColor: Colors.blue,
