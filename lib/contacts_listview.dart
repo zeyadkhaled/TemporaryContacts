@@ -168,7 +168,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     Duration difference = currentTime.difference(dateOfCreation);
 
     //If difference is more than a specific period, return true
-    if (difference.inMinutes >= 1) return true;
+    if (difference.inMinutes >= 30) return true;
 
     return false;
   }
@@ -326,10 +326,10 @@ class _ContactsListViewState extends State<ContactsListView> {
         child: Container(
             height: 100.0,
             child: InkWell(
-                onLongPress: () {
+                onLongPress: () {},
+                onTap: () {
                   _showDeleteDialog(contact);
                 },
-                onTap: () {},
                 highlightColor: Colors.red[400],
                 splashColor: Colors.red[100],
                 borderRadius: BorderRadius.all(Radius.circular(15.0)),
@@ -358,10 +358,12 @@ class _ContactsListViewState extends State<ContactsListView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Container(
+                              width: MediaQuery.of(context).size.width,
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
-                                contact.givenName,
+                                contact.givenName + " " + contact.familyName,
                                 style: TextStyle(fontSize: 18.0),
+                                overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
                             ),
@@ -376,7 +378,8 @@ class _ContactsListViewState extends State<ContactsListView> {
                             ),
                           ],
                         ),
-                      ))
+                      )),
+                      new Icon(Icons.delete_sweep, size: 36.0,)
                     ],
                   ),
                 ))));
@@ -395,8 +398,8 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
-  void action(String choice) {
-    if ( choice == "help") print("help");
+  void _sideMenuAction(String choice) {
+    if (choice == "help") print("help");
   }
 
   @override
@@ -406,11 +409,12 @@ class _ContactsListViewState extends State<ContactsListView> {
         title: Text('Temporary Contacts'),
         actions: <Widget>[
           PopupMenuButton<String>(
-              onSelected: action,
+              onSelected: _sideMenuAction,
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    const PopupMenuItem(value: "help" , child: Text("Help")),
-                    const PopupMenuItem(value: "about" ,child: Text("About")),
-                    const PopupMenuItem(value: "reset" ,child: Text("Reset App"))
+                    const PopupMenuItem(value: "help", child: Text("Help")),
+                    const PopupMenuItem(value: "about", child: Text("About")),
+                    const PopupMenuItem(
+                        value: "reset", child: Text("Reset App"))
                   ])
         ],
       ),
