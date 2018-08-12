@@ -7,11 +7,11 @@ import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'addcontact_dialog.dart';
 import 'dart:core';
+import 'package:fluttertoast/fluttertoast.dart';
 
 //TO DO
 // Change Tile UI
 //Change overall UI
-//Add auto remove
 //Add view contact
 
 class ContactsListView extends StatefulWidget {
@@ -19,10 +19,8 @@ class ContactsListView extends StatefulWidget {
 }
 
 class _ContactsListViewState extends State<ContactsListView> {
-
-
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  final _contactList = <Contact>[];
+  List<Contact> _contactList = <Contact>[];
   final _deleteList = <Contact>[];
   ScrollController _scrollController =
       new ScrollController(); //For ListView Scrolling
@@ -52,11 +50,10 @@ class _ContactsListViewState extends State<ContactsListView> {
   // (3) _addContacts() adds contact if not duplicated in _contactsList , SharedPrefs, ContactsService
   // (4) _deleteContacts() removes the contact from _contactsList, SharedPrefs, ContactsService "Using a query"
 
-
-
   //Retrieves contacts from SharedPreferences and adds them to _contactsList
   //Also checks for Contacts to be removed if they passed the interval
   _getContacts() async {
+    _contactList = <Contact>[];
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
     if (contacts != null) {
@@ -74,7 +71,6 @@ class _ContactsListViewState extends State<ContactsListView> {
           if (_shouldBeRemoved(details[3])) {
             _deleteList.add(c);
           } else {
-            print("here");
             _contactList.add(c);
           }
         }
@@ -103,7 +99,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     String time = new DateTime.now().millisecondsSinceEpoch.toString();
     details.add(time);
 
-    //Retrieve SharePrefences
+    //Retrieve SharePreferences
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
 
@@ -115,12 +111,23 @@ class _ContactsListViewState extends State<ContactsListView> {
       _contactList.add(c);
       ContactsService.addContact(c);
     } else {
+      //Check for duplicate
       if (!contacts.contains(name)) {
         contacts.add(name);
         prefs.setStringList('contacts', contacts);
         prefs.setStringList(name, details);
         _contactList.add(c);
         ContactsService.addContact(c);
+      } else {
+        //Handle duplicate found
+        Fluttertoast.showToast(
+            msg: "A duplicate contact was found!",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIos: 1,
+            bgcolor: "#e74c3c",
+            textcolor: '#ffffff'
+        );
       }
     }
   }
@@ -146,8 +153,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     }
 
     //ContactsList removal
-    if (_contactList.contains(c))
-      _contactList.remove(c);
+    if (_contactList.contains(c)) _contactList.remove(c);
 
     setState(() {
       _buildListView();
@@ -158,7 +164,7 @@ class _ContactsListViewState extends State<ContactsListView> {
   bool _shouldBeRemoved(String time) {
     //Parse time of creation from String
     DateTime dateOfCreation =
-    new DateTime.fromMillisecondsSinceEpoch(int.parse(time));
+        new DateTime.fromMillisecondsSinceEpoch(int.parse(time));
     //Retrieve current time and find difference between the two
     DateTime currentTime = new DateTime.now();
     Duration difference = currentTime.difference(dateOfCreation);
@@ -168,7 +174,6 @@ class _ContactsListViewState extends State<ContactsListView> {
 
     return false;
   }
-
 
   // Method to ask for permissions if not requested before
   _requestContactsPermissions() async {
@@ -182,21 +187,31 @@ class _ContactsListViewState extends State<ContactsListView> {
 
   //View the Add contact Full screen dialog
   Future _showAddContactDialog() async {
-    Contact save =
+    Contact returnedContact =
         await Navigator.of(context).push(new MaterialPageRoute<Contact>(
             builder: (BuildContext context) {
               return new AddContactDialog();
             },
             fullscreenDialog: true));
-    if (save != null) {
-      _addContacts(save);
+    if (returnedContact != null) {
+      _addContacts(returnedContact);
     }
+  }
+
+  Future<Null> _handleRefresh() async {
+    await new Future.delayed(new Duration(seconds: 1));
+
+    setState(() {
+      _getContacts();
+    });
+
+    return null;
   }
 
   //Shows delete dialog when Contact tile is long pressed
   _showDeleteDialog(Contact c) {
     showDialog(
-      barrierDismissible: true,
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -241,11 +256,11 @@ class _ContactsListViewState extends State<ContactsListView> {
   }
 
   Widget _buildListView() {
-
     //Check if the contact list has time to be viewed
     if (_contactList.length == 0) {
       return Center(
         child: SingleChildScrollView(
+          controller: _scrollController,
           child: Container(
             margin: EdgeInsets.all(16.0),
             padding: EdgeInsets.all(16.0),
@@ -277,6 +292,8 @@ class _ContactsListViewState extends State<ContactsListView> {
     }
 
     return ListView.builder(
+      physics:
+          AlwaysScrollableScrollPhysics(), //Fix this not working due to reversed ListView
       controller: _scrollController,
       reverse: true,
       shrinkWrap: true,
@@ -386,7 +403,10 @@ class _ContactsListViewState extends State<ContactsListView> {
       appBar: AppBar(
         title: Text('Contacts App'),
       ),
-      body: _buildListView(),
+      body: new RefreshIndicator(
+        child: _buildListView(),
+        onRefresh: _handleRefresh,
+      ),
       floatingActionButton: actionButton(),
     );
   }
