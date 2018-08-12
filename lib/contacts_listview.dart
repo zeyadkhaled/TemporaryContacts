@@ -125,8 +125,7 @@ class _ContactsListViewState extends State<ContactsListView> {
             gravity: ToastGravity.BOTTOM,
             timeInSecForIos: 1,
             bgcolor: "#e74c3c",
-            textcolor: '#ffffff'
-        );
+            textcolor: '#ffffff');
       }
     }
   }
@@ -197,7 +196,7 @@ class _ContactsListViewState extends State<ContactsListView> {
 
       //Scroll to top of list after item has been added
       SchedulerBinding.instance.addPostFrameCallback(
-            (_) {
+        (_) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300),
@@ -205,7 +204,6 @@ class _ContactsListViewState extends State<ContactsListView> {
           );
         },
       );
-
     }
   }
 
@@ -301,7 +299,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     }
 
     return ListView.builder(
-     // physics:
+      // physics:
       //    AlwaysScrollableScrollPhysics(), //Fix this not working due to reversed ListView
       controller: _scrollController,
       reverse: true,
@@ -397,11 +395,24 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
+  void action(String choice) {
+    if ( choice == "help") print("help");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Contacts App'),
+        title: Text('Temporary Contacts'),
+        actions: <Widget>[
+          PopupMenuButton<String>(
+              onSelected: action,
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    const PopupMenuItem(value: "help" , child: Text("Help")),
+                    const PopupMenuItem(value: "about" ,child: Text("About")),
+                    const PopupMenuItem(value: "reset" ,child: Text("Reset App"))
+                  ])
+        ],
       ),
       body: new RefreshIndicator(
         child: _buildListView(),
