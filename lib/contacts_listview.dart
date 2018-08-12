@@ -109,6 +109,7 @@ class _ContactsListViewState extends State<ContactsListView> {
       prefs.setStringList(name, details);
       _contactList.add(c);
       ContactsService.addContact(c);
+      _handleScrolling();
     } else {
       //Check for duplicate
       if (!contacts.contains(name)) {
@@ -117,6 +118,7 @@ class _ContactsListViewState extends State<ContactsListView> {
         prefs.setStringList(name, details);
         _contactList.add(c);
         ContactsService.addContact(c);
+        _handleScrolling();
       } else {
         //Handle duplicate found
         Fluttertoast.showToast(
@@ -193,17 +195,6 @@ class _ContactsListViewState extends State<ContactsListView> {
             fullscreenDialog: true));
     if (returnedContact != null) {
       _addContacts(returnedContact);
-
-      //Scroll to top of list after item has been added
-      SchedulerBinding.instance.addPostFrameCallback(
-        (_) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        },
-      );
     }
   }
 
@@ -215,6 +206,17 @@ class _ContactsListViewState extends State<ContactsListView> {
     return null;
   }
 
+  _handleScrolling() {
+    SchedulerBinding.instance.addPostFrameCallback(
+          (_) {
+        _scrollController.animateTo(
+          _scrollController.position.minScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      },
+    );
+  }
   //Shows delete dialog when Contact tile is long pressed
   _showDeleteDialog(Contact c) {
     showDialog(
@@ -299,11 +301,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     }
 
     return ListView.builder(
-      // physics:
-      //    AlwaysScrollableScrollPhysics(), //Fix this not working due to reversed ListView
       controller: _scrollController,
-      reverse: true,
-      shrinkWrap: true,
       padding: const EdgeInsets.all(16.0),
       itemBuilder: (BuildContext context, int index) {
         if (index.isOdd) {
@@ -312,10 +310,10 @@ class _ContactsListViewState extends State<ContactsListView> {
           );
         }
         final i = index ~/ 2;
-        var contact = _contactList[i];
+        var contact = _contactList[_contactList.length - 1 - i];
         return _contactTile(contact);
       },
-      itemCount: (_contactList.length * 2) - 1,
+      itemCount: (_contactList.length * 2),
     );
   }
 
@@ -324,7 +322,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     return Material(
         color: Colors.transparent,
         child: Container(
-            height: 100.0,
+            height: 110.0,
             child: InkWell(
                 onLongPress: () {},
                 onTap: () {
@@ -373,13 +371,16 @@ class _ContactsListViewState extends State<ContactsListView> {
                                 color: Colors.grey[500],
                                 fontSize: 14.0,
                               ),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       )),
-                      new Icon(Icons.delete_sweep, size: 36.0,)
+                      new Icon(
+                        Icons.delete_sweep,
+                        size: 36.0,
+                      )
                     ],
                   ),
                 ))));
@@ -399,7 +400,7 @@ class _ContactsListViewState extends State<ContactsListView> {
   }
 
   void _sideMenuAction(String choice) {
-    if (choice == "help") print("help");
+    if (choice == "set"){}
   }
 
   @override
@@ -414,7 +415,7 @@ class _ContactsListViewState extends State<ContactsListView> {
                     const PopupMenuItem(value: "help", child: Text("Help")),
                     const PopupMenuItem(value: "about", child: Text("About")),
                     const PopupMenuItem(
-                        value: "reset", child: Text("Reset App"))
+                        value: "set", child: Text("Set Interval")),
                   ])
         ],
       ),
