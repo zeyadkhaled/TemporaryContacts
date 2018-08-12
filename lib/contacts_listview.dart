@@ -22,7 +22,7 @@ class _ContactsListViewState extends State<ContactsListView> {
   //###################Properties######################
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   List<Contact> _contactList = <Contact>[];
-  final _deleteList = <Contact>[];
+  List<Contact> _deleteList = <Contact>[];
   ScrollController _scrollController = new ScrollController();
   int _intervalValue;
   final _colorList = <Color>[
@@ -32,7 +32,13 @@ class _ContactsListViewState extends State<ContactsListView> {
     Colors.green[600],
     Colors.cyan[600],
     Colors.amber[600],
-    Colors.brown[600],
+    Colors.indigo[600],
+    Colors.lime[600],
+    Colors.deepOrange[600],
+    Colors.deepPurple[600],
+    Colors.lightBlue[600],
+    Colors.teal[600],
+    Colors.grey[600]
   ];
 
   // Application Flow:
@@ -101,13 +107,14 @@ class _ContactsListViewState extends State<ContactsListView> {
       }
       //Check if there was found any contacts to be deleted and deleted them
       for (Contact c in _deleteList) {
-        _deleteContact(c);
+         await _deleteContact(c);
       }
-    }
+      _deleteList = <Contact>[];
 
-    setState(() {
-      _buildListView();
-    });
+      setState(() {
+        _buildListView();
+      });
+    }
   }
 
   //Adds contacts to SharedPrefs, ContactsServices, and _contactsList
@@ -198,7 +205,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     Duration difference = currentTime.difference(dateOfCreation);
 
     //If difference is more than a specific period, return true
-    if (difference.inDays >= _intervalValue) return true;
+    if (difference.inMinutes >= _intervalValue) return true;
 
     return false;
   }
@@ -509,10 +516,10 @@ class _ContactsListViewState extends State<ContactsListView> {
           PopupMenuButton<String>(
               onSelected: _sideMenuAction,
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    const PopupMenuItem(
+                        value: "interval", child: Text("Set interval")),
                     const PopupMenuItem(value: "help", child: Text("Help")),
                     const PopupMenuItem(value: "about", child: Text("About")),
-                    const PopupMenuItem(
-                        value: "interval", child: Text("AutoRemove Interval")),
                   ])
         ],
       ),
