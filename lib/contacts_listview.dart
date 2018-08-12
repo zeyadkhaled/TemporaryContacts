@@ -6,7 +6,13 @@ import 'package:simple_permissions/simple_permissions.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'addcontact_dialog.dart';
+import 'dart:core';
 
+//TO DO
+// Change Tile UI
+//Change overall UI
+//Add auto remove
+//Add view contact
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
@@ -68,13 +74,26 @@ class _ContactsListViewState extends State<ContactsListView> {
     }
   }
 
+//  bool _shouldBeRemoved(String time) {
+//
+//    DateTime dateOfCreation
+//
+//    return false;
+//  }
+
   //Adds contacts to SharedPrefs, ContactsServices, and _contactsList
   _addContacts(Contact c) async {
+    //Contact details
     String name = c.givenName + c.familyName;
     List<String> details = new List<String>();
     details.add(c.givenName);
     details.add(c.familyName);
     details.add(c.jobTitle);
+
+    // Timestamp of creation in milliseconds
+    String time = new DateTime.now().millisecondsSinceEpoch.toString();
+    details.add(time);
+
 
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
@@ -196,6 +215,42 @@ class _ContactsListViewState extends State<ContactsListView> {
   }
 
   Widget _buildListView() {
+
+
+    if ( _contactList.length == 0) {
+      return Center(
+        child: SingleChildScrollView(
+          child: Container(
+            margin: EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16.0),
+              color: Colors.red[600],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 180.0,
+                  color: Colors.white,
+                ),
+                Text(
+                  "You dont have any contacts yet, add some!",
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headline.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+
     return ListView.builder(
       controller: _scrollController,
       reverse: true,
@@ -283,13 +338,6 @@ class _ContactsListViewState extends State<ContactsListView> {
       child: Icon(Icons.add),
       onPressed: () {
         _showAddContactDialog();
-
-//        _addContacts(new Contact(
-//            givenName: "Zeyad", familyName: "Test", jobTitle: "Hacker"));
-//        setState(() {
-//          _buildListView();
-//        });
-//
         //Scroll to top of list after item has been added
         SchedulerBinding.instance.addPostFrameCallback(
           (_) {

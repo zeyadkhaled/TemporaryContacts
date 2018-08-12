@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart';
 
+//TO DO
+// Change UI
+// Add Input Validation
+
 class AddContactDialog extends StatefulWidget {
   @override
   AddContactDialogState createState() => new AddContactDialogState();
@@ -14,6 +18,8 @@ class AddContactDialogState extends State<AddContactDialog> {
     phones = [new Item(label: "Mobile", value: number)];
     contact.phones = phones;
   }
+
+
 
   Widget _createDialogBody() {
     return Padding(
