@@ -8,22 +8,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'addcontact_dialog.dart';
 import 'dart:core';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:numberpicker/numberpicker.dart';
 
-//TO DO
-//Change Tile UI
-//Change overall UI
+//TODO: Change Tile UI
+//TODO: Change overall UI
+//TODO: About page
+//TODO: Help page
+//TODO: Interval dialog
+//TODO: Expand Tiles
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
 }
 
 class _ContactsListViewState extends State<ContactsListView> {
+  //###################Properties######################
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   List<Contact> _contactList = <Contact>[];
   final _deleteList = <Contact>[];
-  ScrollController _scrollController =
-      new ScrollController(); //For ListView Scrolling
-
+  ScrollController _scrollController = new ScrollController();
+  int _intervalValue;
   final _colorList = <Color>[
     Colors.pink[600],
     Colors.red[600],
@@ -34,12 +38,6 @@ class _ContactsListViewState extends State<ContactsListView> {
     Colors.brown[600],
   ];
 
-  //Generate Random Color
-  Color _randColor() {
-    Random rand = new Random();
-    return _colorList[rand.nextInt(_colorList.length)];
-  }
-
   // Application Flow:
   // (1) _getContacts() is called to retrieve data from shared preferences
   //     Format is {'contacts' : {'givenName+familyName',''givenName+familyName'}}
@@ -49,11 +47,39 @@ class _ContactsListViewState extends State<ContactsListView> {
   // (3) _addContacts() adds contact if not duplicated in _contactsList , SharedPrefs, ContactsService
   // (4) _deleteContacts() removes the contact from _contactsList, SharedPrefs, ContactsService "Using a query"
 
+  //############################Intialization##########################
+
+  //Initialize the state of the app
+  @override
+  void initState() {
+    super.initState();
+    _requestContactsPermissions();
+    _initializeInterval();
+    _getContacts();
+  }
+
+  // Method to ask for permissions if not requested before
+  _requestContactsPermissions() async {
+    await SimplePermissions.requestPermission(Permission.WriteContacts);
+    await SimplePermissions.requestPermission(Permission.ReadContacts);
+  }
+
+  //#########################MISC#########################
+
+  //Generate Random Color
+  Color _randColor() {
+    Random rand = new Random();
+    return _colorList[rand.nextInt(_colorList.length)];
+  }
+
+  //#########################CONTACTS WORK#########################
+
   //Retrieves contacts from SharedPreferences and adds them to _contactsList
   //Also checks for Contacts to be removed if they passed the interval
   _getContacts() async {
     _contactList = <Contact>[];
     final SharedPreferences prefs = await _prefs;
+    print("Did change?" + prefs.getInt('interval').toString());
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
     if (contacts != null) {
       for (String name in contacts) {
@@ -160,6 +186,8 @@ class _ContactsListViewState extends State<ContactsListView> {
     });
   }
 
+  //########################Interval Work#############################
+
   //The Contact AutoRemoval algorithm
   bool _shouldBeRemoved(String time) {
     //Parse time of creation from String
@@ -170,33 +198,29 @@ class _ContactsListViewState extends State<ContactsListView> {
     Duration difference = currentTime.difference(dateOfCreation);
 
     //If difference is more than a specific period, return true
-    if (difference.inMinutes >= 30) return true;
+    if (difference.inDays >= _intervalValue) return true;
 
     return false;
   }
 
-  // Method to ask for permissions if not requested before
-  _requestContactsPermissions() async {
-    bool res =
-        await SimplePermissions.requestPermission(Permission.WriteContacts);
-    bool res2 =
-        await SimplePermissions.requestPermission(Permission.ReadContacts);
-    print("permission request result is " + res.toString());
-    print("permission request result is " + res2.toString());
-  }
-
-  //View the Add contact Full screen dialog
-  Future _showAddContactDialog() async {
-    Contact returnedContact =
-        await Navigator.of(context).push(new MaterialPageRoute<Contact>(
-            builder: (BuildContext context) {
-              return new AddContactDialog();
-            },
-            fullscreenDialog: true));
-    if (returnedContact != null) {
-      _addContacts(returnedContact);
+  _initializeInterval() async {
+    final SharedPreferences prefs = await _prefs;
+    int interval = prefs.getInt('interval');
+    if ( interval != null) {
+      _intervalValue = interval;
+    } else {
+      _intervalValue = 7;
+       prefs.setInt('interval', 7);
     }
   }
+
+  _changeInterval(int value) async {
+    final SharedPreferences prefs = await _prefs;
+    prefs.setInt('interval', value);
+    _intervalValue = value;
+  }
+
+  //######################HANDLERS###############################
 
   Future<Null> _handleRefresh() async {
     await new Future.delayed(new Duration(seconds: 1));
@@ -208,7 +232,7 @@ class _ContactsListViewState extends State<ContactsListView> {
 
   _handleScrolling() {
     SchedulerBinding.instance.addPostFrameCallback(
-          (_) {
+      (_) {
         _scrollController.animateTo(
           _scrollController.position.minScrollExtent,
           duration: const Duration(milliseconds: 300),
@@ -217,6 +241,9 @@ class _ContactsListViewState extends State<ContactsListView> {
       },
     );
   }
+
+  //###########################DIALOGS###########################
+
   //Shows delete dialog when Contact tile is long pressed
   _showDeleteDialog(Contact c) {
     showDialog(
@@ -256,13 +283,44 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
-  //Initialize the state of the app
-  @override
-  void initState() {
-    super.initState();
-    _getContacts();
-    _requestContactsPermissions();
+  //View the Add contact Full screen dialog
+  Future _showAddContactDialog() async {
+    Contact returnedContact =
+        await Navigator.of(context).push(new MaterialPageRoute<Contact>(
+            builder: (BuildContext context) {
+              return new AddContactDialog();
+            },
+            fullscreenDialog: true));
+    if (returnedContact != null) {
+      _addContacts(returnedContact);
+    }
   }
+
+  Future _showIntervalDialog() async {
+    await showDialog<int>(
+      context: context,
+      builder: (BuildContext context) {
+        return new NumberPickerDialog.integer(
+          minValue: 1,
+          maxValue: 100,
+          step: 1,
+          initialIntegerValue: 1,
+          title:
+              new Text("Set Contact Auto-Remove Interval after how many days?"),
+        );
+      },
+    ).then((value) => _changeInterval(value));
+    print("CHANGED" + _intervalValue.toString());
+  }
+
+  //Side menu
+  void _sideMenuAction(String choice) {
+    if (choice == "set") {
+      _showIntervalDialog();
+    }
+  }
+
+  //########################BUILD###############################
 
   Widget _buildListView() {
     //Check if the contact list has time to be viewed
@@ -397,10 +455,6 @@ class _ContactsListViewState extends State<ContactsListView> {
       },
       elevation: 2.0,
     );
-  }
-
-  void _sideMenuAction(String choice) {
-    if (choice == "set"){}
   }
 
   @override

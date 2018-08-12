@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-//TO DO
-// Change UI
-
 class AddContactDialog extends StatefulWidget {
   @override
   AddContactDialogState createState() => new AddContactDialogState();
