@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:simple_permissions/simple_permissions.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:temp_contact/help_dialog.dart';
 import 'addcontact_dialog.dart';
 import 'dart:core';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -256,6 +257,29 @@ class _ContactsListViewState extends State<ContactsListView> {
 
   //###########################DIALOGS###########################
 
+  //View the Add contact Full screen dialog
+  Future _showAddContactDialog() async {
+    Contact returnedContact =
+        await Navigator.of(context).push(new MaterialPageRoute<Contact>(
+            builder: (BuildContext context) {
+              return new AddContactDialog();
+            },
+            fullscreenDialog: true));
+    if (returnedContact != null) {
+      _addContacts(returnedContact);
+    }
+  }
+
+  //View the help dialog
+  _showHelpDialog(){
+
+    Navigator.of(context).push(new MaterialPageRoute<Contact>(
+        builder: (BuildContext context) {
+          return new HelpDialog();
+        },
+        fullscreenDialog: true));
+  }
+
   //Shows delete dialog when Contact tile is long pressed
   _showDeleteDialog(Contact c) {
     showDialog(
@@ -295,19 +319,6 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
-  //View the Add contact Full screen dialog
-  Future _showAddContactDialog() async {
-    Contact returnedContact =
-        await Navigator.of(context).push(new MaterialPageRoute<Contact>(
-            builder: (BuildContext context) {
-              return new AddContactDialog();
-            },
-            fullscreenDialog: true));
-    if (returnedContact != null) {
-      _addContacts(returnedContact);
-    }
-  }
-
   Future _showIntervalDialog() async {
     await showDialog<int>(
       context: context,
@@ -327,6 +338,8 @@ class _ContactsListViewState extends State<ContactsListView> {
   void _sideMenuAction(String choice) {
     if (choice == "interval") {
       _showIntervalDialog();
+    } else if ( choice == "help") {
+      _showHelpDialog();
     }
   }
 
@@ -377,12 +390,6 @@ class _ContactsListViewState extends State<ContactsListView> {
       controller: _scrollController,
       padding: const EdgeInsets.all(16.0),
       itemBuilder: (BuildContext context, int index) {
-//        if (index.isOdd) {
-//          return Divider(
-//            height: 2.0,
-//          );
-//        }
-//        final i = index ~/ 2;
         var contact = _contactList[_contactList.length - 1 - index];
         return _customTile(contact);
       },
@@ -390,6 +397,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
+  //Customized tile for contacts view in the list view
   Widget _customTile(Contact contact) {
     return new Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -413,7 +421,7 @@ class _ContactsListViewState extends State<ContactsListView> {
         onDismissed: (direction) {
           _deleteContact(contact);
           setState(() {
-           _getContacts();
+            _getContacts();
           });
         },
         child: new ExpansionTile(
@@ -457,75 +465,6 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
-  //Single contact tile that will be used in the ListView
-  Widget _contactTile(Contact contact) {
-    return Material(
-        color: Colors.transparent,
-        child: Container(
-            height: 110.0,
-            child: InkWell(
-                onLongPress: () {},
-                onTap: () {
-                  _showDeleteDialog(contact);
-                },
-                highlightColor: Colors.red[400],
-                splashColor: Colors.red[100],
-                borderRadius: BorderRadius.all(Radius.circular(15.0)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(right: 16.0),
-                        child: new CircleAvatar(
-                          child: Text(
-                              contact.givenName.substring(0, 1).toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 20.0,
-                              )),
-                          radius: 30.0,
-                          backgroundColor: _randColor(),
-                          foregroundColor: Colors.black,
-                        ),
-                      ),
-                      Flexible(
-                          child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Container(
-                              width: MediaQuery.of(context).size.width,
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: Text(
-                                contact.givenName + " " + contact.familyName,
-                                style: TextStyle(fontSize: 18.0),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ),
-                            Text(
-                              contact.jobTitle,
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 14.0,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      )),
-                      new Icon(
-                        Icons.delete_sweep,
-                        size: 36.0,
-                      )
-                    ],
-                  ),
-                ))));
-  }
-
   //Action button to show up add contact form
   Widget actionButton() {
     return FloatingActionButton(
@@ -539,26 +478,31 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
+  //Appbar Icon topleft
+  Widget _appbarIcon() {
+    return new Builder(
+      builder: (BuildContext context) {
+        return new GestureDetector(
+          child: DecoratedBox(
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage('assets/icon/baricon.png')))),
+          onTap: () {
+            _getContacts();
+            Scaffold
+                .of(context)
+                .showSnackBar(new SnackBar(content: new Text("Refreshed")));
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: new Builder(
-          builder: (BuildContext context) {
-            return new GestureDetector(
-              child: DecoratedBox(
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage('assets/icon/baricon.png')))),
-              onTap: () {
-                _getContacts();
-                Scaffold
-                    .of(context)
-                    .showSnackBar(new SnackBar(content: new Text("Refreshed")));
-              },
-            );
-          },
-        ),
+        leading: _appbarIcon(),
         title: Center(
           child: Text('Temporary Contacts'),
         ),
