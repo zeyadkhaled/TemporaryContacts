@@ -13,6 +13,7 @@ import 'package:numberpicker/numberpicker.dart';
 //TODO: Change overall UI
 //TODO: About page
 //TODO: Help page
+//TODO: Organize project structure
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
@@ -80,6 +81,7 @@ class _ContactsListViewState extends State<ContactsListView> {
   //Retrieves contacts from SharedPreferences and adds them to _contactsList
   //Also checks for Contacts to be removed if they passed the interval
   _getContacts() async {
+    _initializeInterval();
     _contactList = <Contact>[];
     final SharedPreferences prefs = await _prefs;
     final List<String> contacts = (prefs.getStringList('contacts') ?? null);
@@ -107,9 +109,10 @@ class _ContactsListViewState extends State<ContactsListView> {
       }
       //Check if there was found any contacts to be deleted and deleted them
       for (Contact c in _deleteList) {
-         await _deleteContact(c);
+        await _deleteContact(c);
       }
-      _deleteList = <Contact>[];
+      _deleteList =
+          <Contact>[]; // Reset DeleteList for later usage in same session
 
       setState(() {
         _buildListView();
@@ -314,7 +317,7 @@ class _ContactsListViewState extends State<ContactsListView> {
           maxValue: 100,
           step: 1,
           initialIntegerValue: _intervalValue,
-          title: new Text("Pick days after which contacts are AutoRemoved"),
+          title: new Text("Pick DAYS after which contacts are removed"),
         );
       },
     ).then((value) => _changeInterval(value));
@@ -333,15 +336,20 @@ class _ContactsListViewState extends State<ContactsListView> {
     //Check if the contact list has time to be viewed
     if (_contactList.length == 0) {
       return Center(
-        child: SingleChildScrollView(
-          controller: _scrollController,
+          child: SingleChildScrollView(
+        controller: _scrollController,
+        child: GestureDetector(
+          onTap: () {
+            _showAddContactDialog();
+          },
           child: Container(
             margin: EdgeInsets.all(16.0),
             padding: EdgeInsets.all(16.0),
+            width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.0),
-              color: Colors.red[600],
-            ),
+                borderRadius: BorderRadius.circular(16.0),
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 8.0)]),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -349,20 +357,20 @@ class _ContactsListViewState extends State<ContactsListView> {
                 Icon(
                   Icons.error_outline,
                   size: 180.0,
-                  color: Colors.white,
+                  color: Colors.red,
                 ),
                 Text(
-                  "You dont have any contacts yet, add some!",
+                  "Click to add contacts!",
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headline.copyWith(
-                        color: Colors.white,
+                        color: Colors.red,
                       ),
                 ),
               ],
             ),
           ),
         ),
-      );
+      ));
     }
 
     return ListView.builder(
@@ -385,42 +393,54 @@ class _ContactsListViewState extends State<ContactsListView> {
   Widget _customTile(Contact contact) {
     return new Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      child: new ExpansionTile(
-        leading: new CircleAvatar(
-          child: Text(contact.givenName.substring(0, 1).toUpperCase(),
-              style: TextStyle(
-                fontSize: 20.0,
-              )),
-          radius: 25.0,
-          backgroundColor: _randColor(),
-          foregroundColor: Colors.white,
+      child: Dismissible(
+        background: Container(
+          color: Colors.red,
         ),
-        title: new Text(
-          contact.givenName + " " + contact.familyName,
-          style: new TextStyle(fontSize: 18.0),
+        key: Key("dismiss"),
+        direction: DismissDirection.endToStart,
+        onDismissed: (direction) {
+          setState(() {
+            _deleteContact(contact);
+          });
+        },
+        child: new ExpansionTile(
+          leading: new CircleAvatar(
+            child: Text(contact.givenName.substring(0, 1).toUpperCase(),
+                style: TextStyle(
+                  fontSize: 20.0,
+                )),
+            radius: 25.0,
+            backgroundColor: _randColor(),
+            foregroundColor: Colors.white,
+          ),
+          title: new Text(
+            contact.givenName + " " + contact.familyName,
+            style: new TextStyle(fontSize: 18.0),
+          ),
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: new ListTile(
+                title: new Text(
+                  contact.jobTitle,
+                  maxLines: 2,
+                ),
+                subtitle: new Text(contact.phones == null
+                    ? "No Number"
+                    : contact.phones.toList().removeLast().value),
+                trailing: new Icon(
+                  Icons.delete_forever,
+                  size: 36.0,
+                  color: Colors.red,
+                ),
+                onTap: () {
+                  _showDeleteDialog(contact);
+                },
+              ),
+            )
+          ],
         ),
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: new ListTile(
-              title: new Text(
-                contact.jobTitle,
-                maxLines: 2,
-              ),
-              subtitle: new Text(contact.phones == null
-                  ? "No Number"
-                  : contact.phones.toList().removeLast().value),
-              trailing: new Icon(
-                Icons.delete_sweep,
-                size: 36.0,
-                color: Colors.red,
-              ),
-              onTap: () {
-                _showDeleteDialog(contact);
-              },
-            ),
-          )
-        ],
       ),
     );
   }
@@ -511,7 +531,22 @@ class _ContactsListViewState extends State<ContactsListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Temporary Contacts'),
+        leading: new Builder(
+          builder: (BuildContext context) {
+            return new GestureDetector(
+              child: new Icon(Icons.contacts),
+              onTap: () {
+                _getContacts();
+                Scaffold
+                    .of(context)
+                    .showSnackBar(new SnackBar(content: new Text("Refreshed")));
+              },
+            );
+          },
+        ),
+        title: Center(
+          child: Text('Temporary Contacts'),
+        ),
         actions: <Widget>[
           PopupMenuButton<String>(
               onSelected: _sideMenuAction,
