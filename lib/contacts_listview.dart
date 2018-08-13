@@ -396,12 +396,24 @@ class _ContactsListViewState extends State<ContactsListView> {
       child: Dismissible(
         background: Container(
           color: Colors.red,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              new Icon(
+                Icons.delete_forever,
+                size: 36.0,
+                color: Colors.white,
+              ),
+            ],
+          ),
         ),
         key: Key("dismiss"),
         direction: DismissDirection.endToStart,
         onDismissed: (direction) {
+          _deleteContact(contact);
           setState(() {
-            _deleteContact(contact);
+           _getContacts();
           });
         },
         child: new ExpansionTile(
