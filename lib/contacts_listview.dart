@@ -6,14 +6,12 @@ import 'package:simple_permissions/simple_permissions.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:temp_contact/help_dialog.dart';
+import 'package:temp_contact/about_dialog.dart';
 import 'addcontact_dialog.dart';
 import 'dart:core';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-//TODO: Change overall UI
-//TODO: About page
-//TODO: Help page
 //TODO: Organize project structure
 
 class ContactsListView extends StatefulWidget {
@@ -270,15 +268,42 @@ class _ContactsListViewState extends State<ContactsListView> {
     }
   }
 
+  Future _showIntervalDialog() async {
+    await showDialog<int>(
+      context: context,
+      builder: (BuildContext context) {
+        return new NumberPickerDialog.integer(
+          minValue: 1,
+          maxValue: 100,
+          step: 1,
+          initialIntegerValue: _intervalValue,
+          title: new Text("Pick DAYS after which contacts are removed"),
+        );
+      },
+    ).then((value) => _changeInterval(value));
+  }
+
+
+
+
   //View the help dialog
   _showHelpDialog(){
-
     Navigator.of(context).push(new MaterialPageRoute<Contact>(
         builder: (BuildContext context) {
           return new HelpDialog();
         },
         fullscreenDialog: true));
   }
+
+  //View the about app dialog
+  _showAboutDialog(){
+    Navigator.of(context).push(new MaterialPageRoute<Contact>(
+        builder: (BuildContext context) {
+          return new AboutAppDialog();
+        },
+        fullscreenDialog: true));
+  }
+
 
   //Shows delete dialog when Contact tile is long pressed
   _showDeleteDialog(Contact c) {
@@ -319,20 +344,6 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
-  Future _showIntervalDialog() async {
-    await showDialog<int>(
-      context: context,
-      builder: (BuildContext context) {
-        return new NumberPickerDialog.integer(
-          minValue: 1,
-          maxValue: 100,
-          step: 1,
-          initialIntegerValue: _intervalValue,
-          title: new Text("Pick DAYS after which contacts are removed"),
-        );
-      },
-    ).then((value) => _changeInterval(value));
-  }
 
   //Side menu
   void _sideMenuAction(String choice) {
@@ -340,6 +351,8 @@ class _ContactsListViewState extends State<ContactsListView> {
       _showIntervalDialog();
     } else if ( choice == "help") {
       _showHelpDialog();
+    } else if ( choice == "about") {
+      _showAboutDialog();
     }
   }
 
