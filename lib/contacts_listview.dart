@@ -13,6 +13,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 //TODO: Organize project structure
+//TODO: Fixed dimissiable widget
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
@@ -169,6 +170,12 @@ class _ContactsListViewState extends State<ContactsListView> {
 
   //Delete contact from SharedPrefs, ContactsServices, and _contactsList
   _deleteContact(Contact c) async {
+    //ContactsList removal
+    if (_contactList.contains(c)) {
+      setState(() {
+        _contactList.remove(c);
+      });
+    }
     String name = c.givenName + c.familyName;
 
     //Shared Preferences removal
@@ -186,13 +193,6 @@ class _ContactsListViewState extends State<ContactsListView> {
       Contact delete = test.toList()[0];
       await ContactsService.deleteContact(delete);
     }
-
-    //ContactsList removal
-    if (_contactList.contains(c)) _contactList.remove(c);
-
-    setState(() {
-      _buildListView();
-    });
   }
 
   //########################INTERVAL WORK############################
@@ -283,11 +283,8 @@ class _ContactsListViewState extends State<ContactsListView> {
     ).then((value) => _changeInterval(value));
   }
 
-
-
-
   //View the help dialog
-  _showHelpDialog(){
+  _showHelpDialog() {
     Navigator.of(context).push(new MaterialPageRoute<Contact>(
         builder: (BuildContext context) {
           return new HelpDialog();
@@ -296,14 +293,13 @@ class _ContactsListViewState extends State<ContactsListView> {
   }
 
   //View the about app dialog
-  _showAboutDialog(){
+  _showAboutDialog() {
     Navigator.of(context).push(new MaterialPageRoute<Contact>(
         builder: (BuildContext context) {
           return new AboutAppDialog();
         },
         fullscreenDialog: true));
   }
-
 
   //Shows delete dialog when Contact tile is long pressed
   _showDeleteDialog(Contact c) {
@@ -344,14 +340,13 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
-
   //Side menu
   void _sideMenuAction(String choice) {
     if (choice == "interval") {
       _showIntervalDialog();
-    } else if ( choice == "help") {
+    } else if (choice == "help") {
       _showHelpDialog();
-    } else if ( choice == "about") {
+    } else if (choice == "about") {
       _showAboutDialog();
     }
   }
@@ -429,13 +424,17 @@ class _ContactsListViewState extends State<ContactsListView> {
             ],
           ),
         ),
-        key: Key("dismiss"),
+        key: Key(contact.givenName+contact.familyName),
         direction: DismissDirection.endToStart,
         onDismissed: (direction) {
           _deleteContact(contact);
-          setState(() {
-            _getContacts();
-          });
+          Fluttertoast.showToast(
+              msg: "Contact deleted successfully!",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIos: 1,
+              bgcolor: "#e74c3c",
+              textcolor: '#ffffff');
         },
         child: new ExpansionTile(
           leading: new CircleAvatar(
