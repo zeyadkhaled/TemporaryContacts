@@ -534,7 +534,10 @@ class _ContactsListViewState extends State<ContactsListView> {
         leading: new Builder(
           builder: (BuildContext context) {
             return new GestureDetector(
-              child: new Icon(Icons.contacts),
+              child: DecoratedBox(
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage('assets/icon/baricon.png')))),
               onTap: () {
                 _getContacts();
                 Scaffold
