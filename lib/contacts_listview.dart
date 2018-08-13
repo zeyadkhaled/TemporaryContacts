@@ -13,7 +13,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 //TODO: Organize project structure
-//TODO: Fixed dimissiable widget
+//TODO: Edit Contact
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
@@ -29,17 +29,17 @@ class _ContactsListViewState extends State<ContactsListView> {
   final _colorList = <Color>[
     Colors.pink[600],
     Colors.red[600],
-    Colors.blue[600],
+    //Colors.blue[600],
     Colors.green[600],
     Colors.cyan[600],
     Colors.amber[600],
-    Colors.indigo[600],
+    //Colors.indigo[600],
     Colors.lime[600],
     Colors.deepOrange[600],
     Colors.deepPurple[600],
     Colors.lightBlue[600],
     Colors.teal[600],
-    Colors.grey[600]
+    //Colors.grey[600]
   ];
 
   // Application Flow:
@@ -424,7 +424,7 @@ class _ContactsListViewState extends State<ContactsListView> {
             ],
           ),
         ),
-        key: Key(contact.givenName+contact.familyName),
+        key: Key(contact.givenName + contact.familyName),
         direction: DismissDirection.endToStart,
         onDismissed: (direction) {
           _deleteContact(contact);
@@ -448,7 +448,7 @@ class _ContactsListViewState extends State<ContactsListView> {
           ),
           title: new Text(
             contact.givenName + " " + contact.familyName,
-            style: new TextStyle(fontSize: 18.0),
+            style: new TextStyle(fontSize: 18.0, color: Colors.white),
           ),
           children: <Widget>[
             Padding(
@@ -457,10 +457,18 @@ class _ContactsListViewState extends State<ContactsListView> {
                 title: new Text(
                   contact.jobTitle,
                   maxLines: 2,
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
-                subtitle: new Text(contact.phones == null
-                    ? "No Number"
-                    : contact.phones.toList().removeLast().value),
+                subtitle: new Text(
+                  contact.phones == null
+                      ? "No Number"
+                      : contact.phones.toList().removeLast().value,
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                ),
                 trailing: new Icon(
                   Icons.delete_forever,
                   size: 36.0,
@@ -481,7 +489,6 @@ class _ContactsListViewState extends State<ContactsListView> {
   Widget actionButton() {
     return FloatingActionButton(
       tooltip: "Add contacts",
-      backgroundColor: Colors.blue,
       child: Icon(Icons.add),
       onPressed: () {
         _showAddContactDialog();
@@ -514,9 +521,19 @@ class _ContactsListViewState extends State<ContactsListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: _appbarIcon(),
-        title: Center(
-          child: Text('Temporary Contacts'),
+        backgroundColor: Theme.of(context).backgroundColor,
+        elevation: 0.0,
+        leading: new IconButton(
+          icon: new Icon(Icons.refresh),
+          tooltip: 'Refresh',
+          onPressed: () {
+            _getContacts();
+          },
+        ),
+        centerTitle: true,
+        title: Image.asset(
+          'assets/icon/baricon.png',
+          fit: BoxFit.cover,
         ),
         actions: <Widget>[
           PopupMenuButton<String>(
@@ -529,9 +546,24 @@ class _ContactsListViewState extends State<ContactsListView> {
                   ])
         ],
       ),
-      body: new RefreshIndicator(
-        child: _buildListView(),
-        onRefresh: _handleRefresh,
+      body: new Container(
+        decoration: new BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomRight,
+            stops: [0.1, 0.5, 0.7, 1.0],
+            colors: [
+              Colors.blue[700],
+              Colors.blue[600],
+              Colors.blue[400],
+              Colors.blue[200],
+            ],
+          ),
+        ),
+        child: new RefreshIndicator(
+          child: _buildListView(),
+          onRefresh: _handleRefresh,
+        ),
       ),
       floatingActionButton: actionButton(),
     );

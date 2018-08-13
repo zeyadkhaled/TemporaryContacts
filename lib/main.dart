@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'contacts_listview.dart';
 
-
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
@@ -11,10 +10,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Temporary Contacts',
       theme: new ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+          primaryColor: Colors.blue[700],
+          backgroundColor: Colors.blue[700],
+          accentColor: Colors.blue[500],
+          inputDecorationTheme: InputDecorationTheme(
+            helperStyle:  TextStyle(
+              color: Theme.of(context).accentColor,
+            ),
+      )),
       home: ContactsListView(),
     );
   }
 }
-
