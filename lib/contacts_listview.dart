@@ -265,6 +265,10 @@ class _ContactsListViewState extends State<ContactsListView> {
             fullscreenDialog: true));
     if (returnedContact != null) {
       _addContacts(returnedContact);
+    } else {
+      setState(() {
+        _buildListView();
+      });
     }
   }
 
@@ -358,34 +362,49 @@ class _ContactsListViewState extends State<ContactsListView> {
     if (_contactList.length == 0) {
       return Center(
           child: SingleChildScrollView(
-        controller: _scrollController,
-        child: GestureDetector(
-          onTap: () {
-            _showAddContactDialog();
-          },
-          child: Container(
-            margin: EdgeInsets.all(16.0),
-            padding: EdgeInsets.all(16.0),
-            //width: MediaQuery.of(context).size.width,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16.0),
-                color: Colors.white,
-                boxShadow: [BoxShadow(color: Colors.white70, blurRadius: 2.0)]),
+        child: Dismissible(
+          background: Container(
+            color: Colors.green,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/icon/icon.png',
-                ),
-                Text(
-                  "Click to add contacts!",
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headline.copyWith(
-                        color: Colors.red,
-                      ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                new Icon(
+                  Icons.keyboard_arrow_right,
+                  size: 36.0,
+                  color: Colors.white,
                 ),
               ],
+            ),
+          ),
+          direction: DismissDirection.startToEnd,
+          onDismissed: (direction) {
+            _showAddContactDialog();
+          },
+          key: Key(new DateTime.now().millisecondsSinceEpoch.toString()),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+            child: new ListTile(
+              title: Center(
+                child: new Text(
+                  "Swipe To Start",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28.0,
+                  ),
+                  maxLines: 1,
+                ),
+              ),
+              leading: new Icon(
+                Icons.keyboard_arrow_right,
+                size: 36.0,
+                color: Colors.lightGreen,
+              ),
+              trailing:new Icon(
+                Icons.keyboard_arrow_right,
+                size: 36.0,
+                color: Colors.lightGreen,
+              ) ,
             ),
           ),
         ),
@@ -527,6 +546,10 @@ class _ContactsListViewState extends State<ContactsListView> {
       body: Stack(children: <Widget>[
         new Container(
           decoration: new BoxDecoration(
+            image: new DecorationImage(
+              image: new AssetImage("assets/img/background.png"),
+              fit: BoxFit.cover,
+            ),
             gradient: LinearGradient(
               begin: Alignment.topRight,
               end: Alignment.bottomRight,
