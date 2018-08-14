@@ -15,8 +15,11 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.blue[700],
           accentColor: Colors.blue[500],
           inputDecorationTheme: InputDecorationTheme(
+            labelStyle: TextStyle(
+              color: Colors.white,
+            ),
             helperStyle:  TextStyle(
-              color: Theme.of(context).accentColor,
+              color: Colors.white,
             ),
       )),
       home: ContactsListView(),
