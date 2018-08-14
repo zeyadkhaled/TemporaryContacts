@@ -529,7 +529,7 @@ class _ContactsListViewState extends State<ContactsListView> {
         ),
         centerTitle: true,
         title: Image.asset(
-          'assets/icon/baricon.png',
+          'assets/icon/logo.png',
           fit: BoxFit.cover,
         ),
         actions: <Widget>[

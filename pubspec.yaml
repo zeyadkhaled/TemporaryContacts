@@ -43,6 +43,8 @@ flutter:
   - assets/icon/icon.png
   - assets/icon/baricon.png
   - assets/img/background.png
+  - assets/icon/logo.png
+
   #  - images/a_dot_burr.jpeg
   #  - images/a_dot_ham.jpeg
 
