@@ -568,7 +568,7 @@ class _ContactsListViewState extends State<ContactsListView> {
           ),
         ),
       ]),
-      floatingActionButton: actionButton(),
+      floatingActionButton: _contactList.length != 0 ? actionButton() : null,
     );
   }
 }
