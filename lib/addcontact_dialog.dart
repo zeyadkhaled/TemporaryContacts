@@ -13,7 +13,7 @@ class AddContactDialogState extends State<AddContactDialog> {
   Iterable<Item> phones;
 
   _createPhone(String number) {
-    phones = [new Item(label: "Mobile", value: number)];
+    phones = [new Item(label: "Work", value: number)];
     contact.phones = phones;
   }
 

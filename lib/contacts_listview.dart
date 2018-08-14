@@ -11,6 +11,7 @@ import 'addcontact_dialog.dart';
 import 'dart:core';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 //TODO: Organize project structure
 //TODO: Edit Contact
@@ -481,19 +482,17 @@ class _ContactsListViewState extends State<ContactsListView> {
                 subtitle: new Text(
                   contact.phones == null
                       ? "No Number"
-                      : contact.phones.toList().removeLast().value,
+                      : contact.phones.toList()[0].value,
                   style: TextStyle(
                     color: Colors.white70,
                   ),
                 ),
                 trailing: new Icon(
-                  Icons.delete_forever,
+                  Icons.call,
                   size: 36.0,
-                  color: Colors.red,
+                  color: Colors.green,
                 ),
-                onTap: () {
-                  _showDeleteDialog(contact);
-                },
+                onTap: () => launch("tel://" + contact.phones.toList()[0].value),
               ),
             )
           ],
