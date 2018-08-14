@@ -280,7 +280,7 @@ class _ContactsListViewState extends State<ContactsListView> {
           title: new Text("Pick DAYS after which contacts are removed"),
         );
       },
-    ).then((value) => _changeInterval(value));
+    ).then((value) => value != null ? _changeInterval(value) : null);
   }
 
   //View the help dialog
@@ -366,19 +366,17 @@ class _ContactsListViewState extends State<ContactsListView> {
           child: Container(
             margin: EdgeInsets.all(16.0),
             padding: EdgeInsets.all(16.0),
-            width: MediaQuery.of(context).size.width,
+            //width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16.0),
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 8.0)]),
+                boxShadow: [BoxShadow(color: Colors.white70, blurRadius: 2.0)]),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 180.0,
-                  color: Colors.red,
+                Image.asset(
+                  'assets/icon/icon.png',
                 ),
                 Text(
                   "Click to add contacts!",
@@ -497,26 +495,6 @@ class _ContactsListViewState extends State<ContactsListView> {
     );
   }
 
-  //Appbar Icon topleft
-  Widget _appbarIcon() {
-    return new Builder(
-      builder: (BuildContext context) {
-        return new GestureDetector(
-          child: DecoratedBox(
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage('assets/icon/baricon.png')))),
-          onTap: () {
-            _getContacts();
-            Scaffold
-                .of(context)
-                .showSnackBar(new SnackBar(content: new Text("Refreshed")));
-          },
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -546,25 +524,27 @@ class _ContactsListViewState extends State<ContactsListView> {
                   ])
         ],
       ),
-      body: new Container(
-        decoration: new BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomRight,
-            stops: [0.1, 0.5, 0.7, 1.0],
-            colors: [
-              Colors.blue[700],
-              Colors.blue[600],
-              Colors.blue[400],
-              Colors.blue[200],
-            ],
+      body: Stack(children: <Widget>[
+        new Container(
+          decoration: new BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomRight,
+              stops: [0.1, 0.5, 0.7, 1.0],
+              colors: [
+                Colors.blue[700],
+                Colors.blue[600],
+                Colors.blue[400],
+                Colors.blue[200],
+              ],
+            ),
+          ),
+          child: new RefreshIndicator(
+            child: _buildListView(),
+            onRefresh: _handleRefresh,
           ),
         ),
-        child: new RefreshIndicator(
-          child: _buildListView(),
-          onRefresh: _handleRefresh,
-        ),
-      ),
+      ]),
       floatingActionButton: actionButton(),
     );
   }

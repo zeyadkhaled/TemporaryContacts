@@ -10,6 +10,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Temporary Contacts',
       theme: new ThemeData(
+
           primaryColor: Colors.blue[700],
           backgroundColor: Colors.blue[700],
           accentColor: Colors.blue[500],
