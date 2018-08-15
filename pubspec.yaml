@@ -14,6 +14,8 @@ dependencies:
   fluttertoast: ^2.0.7
   numberpicker: ^0.1.5
   url_launcher: ^3.0.3
+  font_awesome_flutter: ^7.1.0
+
 
 
 dev_dependencies:

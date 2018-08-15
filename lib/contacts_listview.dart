@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:simple_permissions/simple_permissions.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:temp_contact/help_dialog.dart';
 import 'package:temp_contact/about_dialog.dart';
 import 'addcontact_dialog.dart';
 import 'dart:core';
@@ -14,7 +13,7 @@ import 'package:numberpicker/numberpicker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 //TODO: Organize project structure
-//TODO: Edit Contact
+//TODO: Fill up help and about
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
@@ -288,14 +287,6 @@ class _ContactsListViewState extends State<ContactsListView> {
     ).then((value) => value != null ? _changeInterval(value) : null);
   }
 
-  //View the help dialog
-  _showHelpDialog() {
-    Navigator.of(context).push(new MaterialPageRoute<Contact>(
-        builder: (BuildContext context) {
-          return new HelpDialog();
-        },
-        fullscreenDialog: true));
-  }
 
   //View the about app dialog
   _showAboutDialog() {
@@ -349,8 +340,6 @@ class _ContactsListViewState extends State<ContactsListView> {
   void _sideMenuAction(String choice) {
     if (choice == "interval") {
       _showIntervalDialog();
-    } else if (choice == "help") {
-      _showHelpDialog();
     } else if (choice == "about") {
       _showAboutDialog();
     }
@@ -537,7 +526,6 @@ class _ContactsListViewState extends State<ContactsListView> {
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                     const PopupMenuItem(
                         value: "interval", child: Text("Set interval")),
-                    const PopupMenuItem(value: "help", child: Text("Help")),
                     const PopupMenuItem(value: "about", child: Text("About")),
                   ])
         ],
