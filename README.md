@@ -1,5 +1,5 @@
 # Temporary Contacts
-A cross-platform application that allows you to quickly add contacts which are then automatically deleted by the application after a default interval or an interval selected by the user.
+An Android/IOS mobile application that allows you to quickly add contacts which are then automatically deleted by the application after a default interval or an interval selected by the user.
 
 ## Screens
 
