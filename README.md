@@ -43,4 +43,8 @@ A cross-platform application that allows you to quickly add contacts which are t
 ## Author
 [Zeyad Khaled](https://www.linkedin.com/in/zeyadkhaled/ "Zeyad Khaled")
 
+## Download
+[Android](https://github.com/zeyadkhaled/TemporaryContacts/blob/master/Temporary%20Contacts.apk)
+[IOS - Coming)[]
+
 
