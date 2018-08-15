@@ -10,6 +10,7 @@ An Android/IOS mobile application that allows you to quickly add contacts which 
 
 ## Features
 - Quickly and stylishly Add Contacts
+- Contacts are synced with phone's native address book
 - Minimal and Simple User Interface and User Experience
 - Delete Contacts with a swipe
 - Auto-delete contacts by setting an interval or having it by default for auto-delete after 7 days
