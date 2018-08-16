@@ -48,7 +48,7 @@ The application main job is to help users not to cram their AddressBook with tem
 [Zeyad Khaled](https://www.linkedin.com/in/zeyadkhaled/ "Zeyad Khaled")
 
 ## Download
-- [Android](https://github.com/zeyadkhaled/TemporaryContacts/releases/download/1.1/Temporary.Contacts.apk)
+- [Android](https://github.com/zeyadkhaled/TemporaryContacts/releases/download/1.0.1/Temporary.Contacts.apk)
 - [IOS - Coming]()
 
 
