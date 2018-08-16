@@ -1,6 +1,9 @@
 # Temporary Contacts
 An Android/IOS mobile application that allows you to quickly add contacts which are then automatically deleted by the application after a default interval or an interval selected by the user.
 
+##  Description
+The application main job is to help users not to cram their AddressBook with temporary unneeded contacts ex: The guy coming to fix the Internet, that person on the internet selling something, the delivery guy, etc. The application allows this by giving users the ability to quickly add contacts in a temporary address book that is synced with main address book to allow things like WhatsApp contacts sync or Name Tag showing, and later the application automatically deletes each temporary contact after a default interval of 7 days or whatever the user sets it to be.
+
 ## Screens
 
 <img src="https://raw.githubusercontent.com/zeyadkhaled/TemporaryContacts/master/slides/slide01.jpg" alt="Slide01" >
