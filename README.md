@@ -9,6 +9,7 @@ An Android/IOS mobile application that allows you to quickly add contacts which 
 
 
 ## Features
+- Auto-Sync with WhatsApp (Tested on Android)
 - Quickly and stylishly Add Contacts
 - Contacts are synced with phone's native address book
 - Minimal and Simple User Interface and User Experience
@@ -39,13 +40,12 @@ An Android/IOS mobile application that allows you to quickly add contacts which 
 
 ## ToDo
 - Need XCode to build IOS version
-- Wait for Contacts Service issue to be resolved
 
 ## Author
 [Zeyad Khaled](https://www.linkedin.com/in/zeyadkhaled/ "Zeyad Khaled")
 
 ## Download
-- [Android](https://github.com/zeyadkhaled/TemporaryContacts/releases/download/1.0/Temporary.Contacts.apk)
+- [Android](https://github.com/zeyadkhaled/TemporaryContacts/releases/download/1.1/Temporary.Contacts.apk)
 - [IOS - Coming]()
 
 
