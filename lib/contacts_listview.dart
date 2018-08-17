@@ -12,14 +12,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-//TODO: Organize project structure
-//TODO: Fill up help and about
 
 class ContactsListView extends StatefulWidget {
   _ContactsListViewState createState() => new _ContactsListViewState();
 }
 
 class _ContactsListViewState extends State<ContactsListView> {
+
   //###################Properties######################
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   List<Contact> _contactList = <Contact>[];
@@ -29,17 +28,14 @@ class _ContactsListViewState extends State<ContactsListView> {
   final _colorList = <Color>[
     Colors.pink[600],
     Colors.red[600],
-    //Colors.blue[600],
     Colors.green[600],
     Colors.cyan[600],
     Colors.amber[600],
-    //Colors.indigo[600],
     Colors.lime[600],
     Colors.deepOrange[600],
     Colors.deepPurple[600],
     Colors.lightBlue[600],
     Colors.teal[600],
-    //Colors.grey[600]
   ];
 
   // Application Flow:
@@ -207,7 +203,7 @@ class _ContactsListViewState extends State<ContactsListView> {
     Duration difference = currentTime.difference(dateOfCreation);
 
     //If difference is more than a specific period, return true
-    if (difference.inMinutes >= _intervalValue) return true;
+    if (difference.inDays >= _intervalValue) return true;
 
     return false;
   }

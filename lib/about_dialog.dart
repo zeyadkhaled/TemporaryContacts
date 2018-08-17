@@ -119,7 +119,7 @@ class AboutDialogState extends State<AboutAppDialog> {
                   child: ListTile(
                     leading: Icon(Icons.confirmation_number),
                     title: Text(
-                      "Released on 15/8/2018",
+                      "Version 1.1",
                       style: TextStyle(color: Colors.grey[800], fontSize: 18.0),
                     ),
                   ),
